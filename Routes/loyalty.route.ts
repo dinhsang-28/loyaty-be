@@ -1,0 +1,24 @@
+// routes/loyalty.routes.ts
+import { Router } from "express";
+import { auth, AuthRequest } from "../middleware/auth";
+import { 
+  getProfile, 
+  checkRewards, 
+  redeemVoucher 
+} from "../Controller/loyalty";
+
+const router = Router();
+
+// Mọi route trong file này đều yêu cầu đăng nhập
+router.use((req, res, next) => auth(req as AuthRequest, res, next));
+
+// [GET] /api/loyalty/profile
+router.get("/profile", getProfile);
+
+// [POST] /api/loyalty/check-rewards
+router.post("/check-rewards", checkRewards);
+
+// [POST] /api/loyalty/redeem
+router.post("/redeem", redeemVoucher);
+
+export default router;
