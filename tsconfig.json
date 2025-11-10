@@ -7,12 +7,14 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": false,
-    "outDir": "dist"
+    "outDir": "dist",
+    "rootDir": "./"
   },
   "include": [
     "**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "dist"
   ]
 }
