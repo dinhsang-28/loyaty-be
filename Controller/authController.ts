@@ -147,13 +147,16 @@ export const resgisterAffiliate = async (req: Request, res: Response) => {
             }],
             { session }
         );
+        const frontendUrl = process.env.FRONTEND_URL || "https://loyaty-be.onrender.com";
+        const referralCode = `${frontendUrl}?ref=${referral_code}`;
         user.affiliateProfile = newAffiliate._id;
         await user.save({ session });
         await session.commitTransaction()
         res.status(201).json({
             success: true,
             message: "Đăng ký affiliate thành công",
-            data: newAffiliate
+            data: newAffiliate,
+            referralCode:referralCode
         });
     } catch (error) {
         await session.abortTransaction();

@@ -38,22 +38,46 @@ export const createOrder = async (req: Request, res: Response) => {
 
     // Xử lý Đổi Voucher (Redemption)
     if (redemptionCode) {
-      const redemption = await Redemption.findOne({ 
-        voucherCode: redemptionCode,
+      const redemption = await Redemption.findOne({
+        _id: redemptionCode,
         status: "redeemed" // Chỉ dùng mã chưa xài
       }).populate('voucherId').session(session);
-      
+
       if (!redemption) throw new Error("Mã giảm giá không hợp lệ hoặc đã được dùng");
 
-      // vi du la voucher là giảm tiền trực tiếp (ví dụ: { type: 'fixed', value: 50000 })
-      const discount = (redemption.voucherId as any)?.benefits?.value || 0;
+      const voucher = redemption.voucherId as any;
+      if (!voucher || voucher.status !== "active") {
+        return res.status(400).json({ message: "khong ton tai voucher hoac voucher khong hoat dong" });
+      }
+      if (voucher.validTo && voucher.validTo < new Date()) {
+        redemption.status = "expired";
+        await redemption.save({ session });
+        return res.status(400).json({ message: "voucher da het han" });
+      }
+      if (voucher.minValue && total_amount < voucher.minValue) {
+        return res.status(400).json({ message: "so luong don hang khong du de doi voucher" })
+      }
+      let discount = 0;
+      switch (voucher.benefit) {
+        case "fixed":
+          discount = voucher.value
+          break;
+        case "percentage":
+          discount = total_amount * (voucher.value / 100);
+          if (voucher.maxDiscount && discount > voucher.maxDiscount) {
+            discount = voucher.maxDiscount;
+          }
+          break
+        default:
+          return res.status(400).json({message:"loai voucher khong hop le"})
+      }
+      // giam tien truc tuyen
       finalAmount -= discount;
-      if (finalAmount < 0) finalAmount = 0;
+      if(finalAmount<0) finalAmount=0;
 
-      // Cập nhật trạng thái
-      redemption.status = "used";
-      redemption.usedAt = new Date();
-      await redemption.save({ session });
+      redemption.status="used";
+      redemption.usedAt= new Date();
+      await redemption.save({session});
       redemptionUsedId = redemption._id.toString();
     }
 
@@ -71,7 +95,7 @@ export const createOrder = async (req: Request, res: Response) => {
         customer: memberId,
         items: items,
         total_amount: finalAmount, // Số tiền cuối cùng sau khi giảm giá
-        original_amount: total_amount, // (Nên thêm trường này)
+        original_amount: total_amount,
         status: "paid",
         shipping_address: shipping_address || null,
         affiliate_referral: affiliateId,
@@ -121,7 +145,7 @@ export const createOrder = async (req: Request, res: Response) => {
     if (affiliateId) {
       res.clearCookie("affiliate_ref");
     }
-    
+
     // Gửi Zalo/SMS cho Member
     // sendZaloMessage(member.phone, `Don hang ${newOrder._id} thanh cong. Ban duoc cong ${pointsEarned} diem.`);
     MessageLog.create({

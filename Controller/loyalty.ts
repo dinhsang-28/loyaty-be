@@ -210,7 +210,6 @@ export const getOrder = async (req:Request,res:Response)=>{
 }
 
 // [GET] /loyalty/my-vouchers (lay danh sach voucher da doi);
-
 export const myVoucher = async (req:Request,res:Response)=>{
   try {
     const memberId = (req as any).user.memberId;
