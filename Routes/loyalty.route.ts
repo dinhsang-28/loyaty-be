@@ -4,7 +4,9 @@ import { auth, AuthRequest } from "../middleware/auth";
 import { 
   getProfile, 
   checkRewards, 
-  redeemVoucher 
+  redeemVoucher ,
+  getOrder,
+  myVoucher
 } from "../Controller/loyalty";
 
 const router = Router();
@@ -21,4 +23,9 @@ router.post("/check-rewards", checkRewards);
 // [POST] /api/loyalty/redeem
 router.post("/redeem", redeemVoucher);
 
+// [GET] /api/loyalty/order
+router.get("/order",getOrder)
+
+// [GET] /api/loyalty/my-voucher
+router.get("/my-voucher",myVoucher)
 export default router;

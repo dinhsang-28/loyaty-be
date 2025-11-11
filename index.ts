@@ -47,6 +47,8 @@ app.post("/test-post", (req, res) => {
   res.json({ message: "POST thành công", data: req.body });
 });
 
+// https://loyaty-be.onrender.com
+
 //  Start server
 // app.listen(port, async () => {
 //   console.log(` Server listening on http://localhost:${port}`);

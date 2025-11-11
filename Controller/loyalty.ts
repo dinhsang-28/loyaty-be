@@ -7,6 +7,7 @@ import Voucher from "../Model/voucher";
 import Redemption from "../Model/redemption";
 import PointTransaction from "../Model/pointTransaction";
 import MessageLog from "../Model/messageLog";
+import Order from "../Model/order";
 // import { sendZaloMessage } from "../helpers/zalo";
 
 // [GET] /loyalty/profile (Yêu cầu đăng nhập Member,lấy danh sách member)
@@ -186,3 +187,46 @@ export const useRewardCode = async (req: Request, res: Response) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+// [GET] /loyalty/order  (lay nhung don hang da mua)
+export const getOrder = async (req:Request,res:Response)=>{
+  try {
+    const memberId = (req as any).user.memberId;
+  if(!memberId){
+    return res.status(400).json({message:"chua dang nhap"});
+  }
+  const orders = await Order.find({
+    customer:memberId,
+  })
+  .sort({createdAt:1})
+  .lean(); 
+  return res.status(200).json({
+    message:"lay don hang da mua thanh cong",
+    data:orders
+  })
+  } catch (error) {
+    console.error("loi khong lay duoc don hang",error);
+    return res.status(500).json({message:"loi he thong"});
+  }
+}
+
+// [GET] /loyalty/my-vouchers (lay danh sach voucher da doi);
+
+export const myVoucher = async (req:Request,res:Response)=>{
+  try {
+    const memberId = (req as any).user.memberId;
+  if(!memberId){
+    return res.status(400).json({message:"yeu cau can phai dang nhap"});
+  }
+  const myVouchers = await Redemption.find({memberId:memberId})
+        .populate("voucherId")
+        .sort({createdAt:-1});
+      
+  return res.status(200).json({message:"Lay voucher member thanh cong" ,
+     data:myVouchers
+    })
+    
+  } catch (error) {
+    console.error("loi khong lay duoc don hang",error);
+    return res.status(500).json({message:"loi he thong"});
+  }
+}
