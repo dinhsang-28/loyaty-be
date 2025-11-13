@@ -17,7 +17,7 @@ const voucherSchema = new mongoose.Schema({
   },//loai giam gia
   value: {
     type: Number,
-    required: true
+    // required: true
   },// type: fixed = 50.000d   hay type: percentage = 50%
   minValue: {
     type: Number,
