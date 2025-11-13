@@ -8,6 +8,7 @@ import Redemption from "../Model/redemption";
 import PointTransaction from "../Model/pointTransaction";
 import MessageLog from "../Model/messageLog";
 import Order from "../Model/order";
+import User from "../Model/user";
 // import { sendZaloMessage } from "../helpers/zalo";
 
 // [GET] /loyalty/profile (Yêu cầu đăng nhập Member,lấy danh sách member)
@@ -23,11 +24,54 @@ export const getProfile = async (req: Request, res: Response) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
-//[PATCH] /loyalty/edit/:id
-// export const EditProfile = async(req:Request,res:Response)=>{
-//   const {id} = req.params;
-//   const memberId = {req as any}.user?.
-// }
+//[PATCH] /loyalty/edit/:id  (id member)
+export const EditProfile = async(req:Request,res:Response)=>{
+  const {id} = req.params; 
+  if(!id){
+    return res.status(401).json({message:"ban khong co quyen truy cap"})
+  }
+  const {name,phone,email} = req.body;
+  const session = await mongoose.startSession();
+  try {
+    const editMember = await Member.findById(id).session(session);
+    const editUser = await User.findById(editMember.user).session(session);
+    if(phone && phone !== editMember.phone){
+      const phoneExits = await User.findOne({phone,_id:{$ne:editUser._id}}).session(session)
+      if(phoneExits){
+        return res.status(400).json({message:"phone da ton tai"})
+      }
+    }
+    editMember.phone=phone;
+    editUser.phone=phone
+    if(email && email!==editUser.email){
+      const emailExits = await User.findById({email,_id:{$ne:editMember._id}}).session(session);
+      if(emailExits){
+        return res.status(400).json({message:"Email da ton tai"})
+      }
+    }
+    editUser.email=email;
+    if(name){
+      editMember.name=name
+    }
+    await editMember.save({session});
+    await editUser.save({session});
+    await session.commitTransaction();
+    return res.status(200).json({
+      success:true,
+      message:"Doi Profile thanh cong"
+    })
+    
+  } catch (error) {
+     await session.abortTransaction();
+     return res.status(500).json({
+      success:false,
+      message:"loi he thong"
+     })
+  }
+  finally{
+    await session.endSession();
+  }
+}
 
 // [POST] /loyalty/check-rewards (Yêu cầu đăng nhập Member,kiểm tra đổi thưởng)
 export const checkRewards = async (req: Request, res: Response) => {

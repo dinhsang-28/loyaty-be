@@ -44,8 +44,9 @@ export const createOrder = async (req: Request, res: Response) => {
       }).populate('voucherId').session(session);
 
       if (!redemption) throw new Error("Mã giảm giá không hợp lệ hoặc đã được dùng");
-
       const voucher = redemption.voucherId as any;
+
+      // const voucher = redemption.voucherCode as any;
       if (!voucher || voucher.status !== "active") {
         return res.status(400).json({ message: "khong ton tai voucher hoac voucher khong hoat dong" });
       }

@@ -3,6 +3,7 @@ import { Router } from "express";
 import { auth, AuthRequest } from "../middleware/auth";
 import { 
   getProfile, 
+  EditProfile,
   checkRewards, 
   redeemVoucher ,
   getOrder,
@@ -16,6 +17,9 @@ router.use((req, res, next) => auth(req as AuthRequest, res, next));
 
 // [GET] /api/loyalty/profile
 router.get("/profile", getProfile);
+
+//[PATCH] /api/loyalty/:id
+router.patch("profile/:id",EditProfile);
 
 // [POST] /api/loyalty/check-rewards
 router.post("/check-rewards", checkRewards);
