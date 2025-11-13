@@ -27,7 +27,10 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
-app.use(cors({ origin:process.env.FRONTEND_URL, credentials: true }));
+// app.use(cors({ origin:process.env.FRONTEND_URL, credentials: true }));
+app.use(cors({
+  origin: "*"
+}));
 
 //  Cookie Parser
 app.use(cookieParser());
