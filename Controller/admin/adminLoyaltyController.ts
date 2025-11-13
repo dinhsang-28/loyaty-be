@@ -6,6 +6,7 @@ import Member from "../../Model/member";
 import PointTransaction from "../../Model/pointTransaction";
 import mongoose from "mongoose";
 import { LoyaltyService } from "../../service/LoyaltyService";
+import { parse } from "path";
 
 // --- TIER (CẤP BẬC) MEMBER ---
 
@@ -24,8 +25,38 @@ export const createTier = async (req: Request, res: Response) => {
 // [GET] /admin/loyalty/tiers
 export const getTiers = async (req: Request, res: Response) => {
   try {
-    const tiers = await Tier.find().sort({ min_points: 1 });
-    res.status(200).json({ success: true, data: tiers });
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const search = req.body.search;
+    const skip = (page-1)*limit;
+    let filter = {};
+    if(search){
+      const searchRegex = new RegExp(search,"i");
+       filter = {
+        $or:[
+        {name:searchRegex},
+        {min_points:searchRegex}
+       ]}
+    }
+      const [totalItems , tiers] = await Promise.all([
+        Tier.countDocuments(filter),
+        Tier.find(filter)
+        .sort({min_points:1})
+        .skip(skip)
+        .limit(limit)
+      ])
+      const totalPage = Math.ceil(totalItems/limit);
+    // const tiers = await Tier.find().sort({ min_points: 1 });
+    res.status(200).json({ 
+      success: true, 
+      data: tiers,
+      pagination:{
+        totalItems,
+        totalPage,
+        currentPage:page,
+        limit
+      }
+    });
   } catch (err: any) {
     res.status(500).json({ success: false, message: err.message });
   }
@@ -91,10 +122,43 @@ export const updateVoucher = async (req: Request, res: Response) => {
 
 // [GET] /admin/loyalty/members
 export const getMembers = async (req: Request, res: Response) => {
-    // Thêm logic tìm kiếm, phân trang ở đây
     try {
-        const members = await Member.find().populate('tier').sort({ createdAt: -1 });
-        res.status(200).json({ success: true, data: members });
+      // logic tìm kiếm, phân trang
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const search = req.body.search || "";
+
+    const skip  = (page-1) * limit;
+
+    let filter = {};
+    if(search){
+      const serchRegex = new RegExp(search,"i");
+      filter = {
+        $or:[
+          {name:serchRegex},
+          {phone:serchRegex},
+        ]
+      }
+    }
+      const [totalItem,members] = await Promise.all([
+        Member.countDocuments(filter),
+        Member.find(filter)
+        .populate('tier')
+        .sort({createdAt:-1})
+        .skip(skip)
+        .limit(limit)
+      ])
+      const totalPage = Math.ceil(totalItem/limit);
+        res.status(200).json({ 
+          success: true, 
+          data: members,
+          pagination:{
+            totalItem,
+            totalPage,
+            currentPage:page,
+            limit
+          }
+        });
     } catch (err: any) {
         res.status(500).json({ success: false, message: err.message });
     }
@@ -103,11 +167,13 @@ export const getMembers = async (req: Request, res: Response) => {
 // [POST] /admin/loyalty/members/adjust-points
 // Admin cộng/trừ điểm thủ công
 export const adjustMemberPoints = async (req: Request, res: Response) => {
-  const { memberId, amount, reason } = req.body; // amount có thể là số âm
+  const { memberId, amount, reason } = req.body;
   if (!memberId || !amount || !reason) {
     return res.status(400).json({ message: "Thiếu memberId, amount, hoặc reason" });
   }
-
+  if(amount<0){
+    return res.status(400).json({message:`amount khong duoc nho hon khong`})
+  }
   const session = await mongoose.startSession();
   session.startTransaction();
   try {

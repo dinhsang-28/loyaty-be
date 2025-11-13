@@ -19,7 +19,7 @@ export const getProfile = async (req: Request, res: Response) => {
 };
 // [POST] /affiliate/request-payout (Yêu cầu đăng nhập Affiliate,yeu cau doi thuong)
 export const requestPayout = async (req: Request, res: Response) => {
-	const affiliateId = (req as any).user?.affiliateId;
+  const affiliateId = (req as any).user?.affiliateId;
   const { amount } = req.body;
   if (!affiliateId) return res.status(401).json({ message: "Yêu cầu đăng nhập affiliate" });
   if (!amount || amount <= 0) return res.status(400).json({ message: "Số tiền không hợp lệ" });
@@ -28,19 +28,19 @@ export const requestPayout = async (req: Request, res: Response) => {
   try {
     const affiliate = await Affiliate.findById(affiliateId).session(session);
     if (!affiliate) {
-      return res.status(403).json({message:"khong tim thay affiliate"})
+      return res.status(403).json({ message: "khong tim thay affiliate" })
     }
     // Kiểm tra các yêu cầu đang chờ
     const existing = await Payout.findOne({
       affiliate: affiliateId,
       status: "requested"
     }).session(session);
-    if (existing){
-      return res.status(200).json({message:"ban dang co mot yeu cau dang cho"})
-    } 
+    if (existing) {
+      return res.status(200).json({ message: "ban dang co mot yeu cau dang cho" })
+    }
     // Kiểm tra số dư (total_commission là số dư có thể rút)
-    if (affiliate.total_commission < amount){
-      return res.status(400).json({message:"so du khong du"})
+    if (affiliate.total_commission < amount) {
+      return res.status(400).json({ message: "so du khong du" })
     }
     // Tạo Payout
     await Payout.create(
@@ -67,7 +67,7 @@ export const requestPayout = async (req: Request, res: Response) => {
 // [GET] /affiliate/payouts (Yêu cầu đăng nhập Affiliate  , xem lich su rut tien)
 export const getPayoutHistory = async (req: Request, res: Response) => {
 
- const affiliateId = (req as any).user?.affiliateId;
+  const affiliateId = (req as any).user?.affiliateId;
   if (!affiliateId) return res.status(401).json({ message: "Yêu cầu đăng nhập affiliate" });
   try {
     const payouts = await Payout.find({ affiliate: affiliateId })
@@ -77,42 +77,95 @@ export const getPayoutHistory = async (req: Request, res: Response) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
-// [GET] /affiliate/summary (Yêu cầu đăng nhập Affiliate,xem thong ke)
+// [GET] /affiliate/summary (Yêu cầu đăng nhập Affiliate,xem thong ke rut tien)
 export const getSummary = async (req: Request, res: Response) => {
   const affiliateId = (req as any).user?.affiliateId;
   if (!affiliateId) return res.status(401).json({ message: "Yêu cầu đăng nhập affiliate" });
   try {
-    const affiliate = await Affiliate.findById(affiliateId).lean();
-    if (!affiliate) return res.status(404).json({ message: "Không tìm thấy hồ sơ" });
-    // Thống kê payout
-    const payoutStats = await Payout.aggregate([
-      { $match: { affiliate: affiliate._id } },
-      {
-        $group: {
-          _id: "$status",
-          total: { $sum: "$amount" }
+    const affIdObject = new mongoose.Types.ObjectId(affiliateId);
+
+    const [affiliate, payoutStatus, totalClicks, totalOrder] = await Promise.all([
+      //lay thong tin nguoi dung
+      Affiliate.findById(affiliateId).lean(),
+      // thong ke payout
+      Payout.aggregate([
+        { $match: { affiliate: affIdObject } },
+        {
+          $group: {
+            _id: "$status",
+            total: { $sum: "$amount" }
+          }
         }
-      }
+      ]),
+      // dem tong so click
+      AffiliateClick.countDocuments({ affiliate: affIdObject }),
+      // dem tong so don hang
+      AffiliateOrder.countDocuments({ affiliate: affIdObject })
     ]);
+    if (!affiliate) {
+      return res.status(400).json({ message: "khong tim thay ho so" })
+    }
     const stats = {
       requested: 0,
       approved: 0,
       paid: 0,
-      rejected: 0
-    };
-    payoutStats.forEach(stat => {
-      stats[stat._id] = stat.total;
-    });
-    res.status(200).json({
+      rejected: 0,
+    }
+    payoutStatus.forEach(stat => {
+      if (stats.hasOwnProperty(stat._id)) {
+        stats[stat._id] = stat.total;
+      }
+    })
+    //tinh toan viec click hoa hong
+    const conversionRate = totalClicks > 0 ? ((totalOrder / totalClicks) * 100).toFixed(2) : "0";
+
+   return res.status(200).json({
       success: true,
       data: {
-        total_commission_balance: affiliate.total_commission, // Số dư hiện tại
-        total_sales: affiliate.total_sales, // Tổng doanh số
+        // Dữ liệu tài chính
+        total_commission_balance: affiliate.total_commission,
+        total_sales: affiliate.total_sales,
         pending_request: stats.requested,
         approved_waiting_payment: stats.approved,
-        paid_total: stats.paid
+        paid_total: stats.paid,
+
+        // Dữ liệu cho dashboard
+        totalClicks: totalClicks,
+        totalOrders: totalOrder,
+        conversionRate: `${conversionRate}%`
       }
-    });
+    })
+    // const affiliate = await Affiliate.findById(affiliateId).lean();
+    // if (!affiliate) return res.status(404).json({ message: "Không tìm thấy hồ sơ" });
+    // // Thống kê payout
+    // const payoutStats = await Payout.aggregate([
+    //   { $match: { affiliate: affiliate._id } },
+    //   {
+    //     $group: {
+    //       _id: "$status",
+    //       total: { $sum: "$amount" }
+    //     }
+    //   }
+    // ]);
+    // const stats = {
+    //   requested: 0,
+    //   approved: 0,
+    //   paid: 0,
+    //   rejected: 0
+    // };
+    // payoutStats.forEach(stat => {
+    //   stats[stat._id] = stat.total;
+    // });
+    // res.status(200).json({
+    //   success: true,
+    //   data: {
+    //     total_commission_balance: affiliate.total_commission, // Số dư hiện tại
+    //     total_sales: affiliate.total_sales, // Tổng doanh số
+    //     pending_request: stats.requested,
+    //     approved_waiting_payment: stats.approved,
+    //     paid_total: stats.paid
+    //   }
+    // });
   } catch (err: any) {
     res.status(500).json({ success: false, message: err.message });
   }
@@ -125,7 +178,7 @@ export const trackAffiliateClick = async (req: Request, res: Response) => {
     const affiliate = await Affiliate.findOne({ referral_code: ref as string });
     if (!affiliate) {
       // Vẫn redirect nhưng không lưu cookie
-       const redirectUrl = process.env.FRONTEND_URL || "/";
+      const redirectUrl = process.env.FRONTEND_URL || "/";
       if (redirectUrl === "/") {
         return res.json({ message: "Mã ref không tồn tại" });
       }
@@ -147,31 +200,28 @@ export const trackAffiliateClick = async (req: Request, res: Response) => {
     // Redirect về trang chủ
     const redirectUrl = process.env.FRONTEND_URL || "/";
     if (redirectUrl === "/") {
-      // Nếu chưa có FRONTEND_URL,  backend trả JSON thay vì redirect
       return res.json({
         success: true,
         message: "Đã ghi nhận click affiliate (dev mode)",
         ref,
       });
     } else {
-      // Nếu có FRONTEND_URL,redirect về đó
       return res.redirect(redirectUrl);
     }
 
   } catch (err: any) {
     console.error("Lỗi track click:", err.message);
-   return res.redirect(process.env.FRONTEND_URL || "/");
+    return res.redirect(process.env.FRONTEND_URL || "/");
   }
 };
 
 // [GET] /affiliate/status/:referral_code (Công khai)
-
 export const getAffiliateStats = async (req: Request, res: Response) => {
 
   try {
     const { referral_code } = req.params;
 
-    const affiliate = (await Affiliate.findOne({ referral_code })).populated("");
+    const affiliate = await Affiliate.findOne({ referral_code });
     if (!affiliate) {
       return res.status(404).json({ success: false, message: "Affiliate không tồn tại" });
     }

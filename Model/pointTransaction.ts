@@ -1,4 +1,4 @@
-// models/logs/pointTransaction.js
+
 import mongoose from "mongoose";
 
 const pointTransactionSchema = new mongoose.Schema({

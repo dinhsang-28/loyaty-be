@@ -1,4 +1,3 @@
-
 import mongoose from "mongoose";
 
 const AffiliateClickSchema = new mongoose.Schema({

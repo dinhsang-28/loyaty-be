@@ -1,4 +1,3 @@
-// models/loyalty/voucher.js
 import mongoose from "mongoose";
 
 const voucherSchema = new mongoose.Schema({

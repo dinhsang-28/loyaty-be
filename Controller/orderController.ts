@@ -155,7 +155,7 @@ export const createOrder = async (req: Request, res: Response) => {
       status: "queued"
     });
 
-    // Gửi email cho Affiliate (nếu có)
+    // Gửi email cho Affiliate
     // if(affiliate && commissionEarned > 0) ... sendMail(...)
 
   } catch (notifyErr: any) {

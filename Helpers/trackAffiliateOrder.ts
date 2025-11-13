@@ -1,8 +1,7 @@
-// Đây là một hàm helper, bạn có thể đặt nó trong file helpers/affiliateTracker.ts
+
 import { Request } from "express";
 import Affiliate from "../Model/affiliate";
 import AffiliateOrder from "../Model/affiliateOrder";
-import AffiliateTier from "../Model/affiliateTier"; // Đảm bảo bạn đã import model này
 
 /**
  * Xử lý hoa hồng affiliate sau khi đơn hàng thành công.

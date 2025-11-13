@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import 'dotenv/config';
 import User from "../Model/user";
 require('dotenv').config();
 export interface AuthRequest extends Request {

@@ -1,4 +1,4 @@
-// models/core/order.js
+
 import mongoose from "mongoose";
 const { Schema } = mongoose;
 

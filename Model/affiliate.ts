@@ -1,4 +1,3 @@
-// models/affiliate/affiliate.js
 import mongoose from "mongoose";
 
 const AffiliateSchema = new mongoose.Schema({

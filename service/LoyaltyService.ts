@@ -1,6 +1,5 @@
-// services/LoyaltyService.ts
+
 import mongoose from "mongoose";
-import Member from "../Model/member";
 import Tier from "../Model/Tier";
 import PointTransaction from "../Model/pointTransaction";
 import MemberTierLog from "../Model/memberTierLog";
@@ -49,7 +48,7 @@ export class LoyaltyService {
         {
           memberId: member._id,
           type: "earn",
-          amount: points, // Điểm kiếm được là số dương
+          amount: points, // Điểm là không được âm
           source: source,
           refId: orderId || undefined,
           description

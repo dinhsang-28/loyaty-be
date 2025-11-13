@@ -1,4 +1,3 @@
-// models/affiliate/affiliateOrder.js
 import mongoose from "mongoose";
 
 const AffiliateOrderSchema = new mongoose.Schema({
@@ -8,7 +7,7 @@ const AffiliateOrderSchema = new mongoose.Schema({
   commission_amount: { type: Number, required: true },
   status: { type: String, enum: ['pending', 'paid', 'canceled'], default: 'pending' },
   meta: Object,
-}, { timestamps: true }); // <-- ĐÃ THÊM
+}, { timestamps: true }); 
 
 AffiliateOrderSchema.index({ affiliate: 1, status: 1 });
 

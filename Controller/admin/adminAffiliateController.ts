@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import AffiliateTier from "../../Model/affiliateTier";
 import AffiliateOrder from "../../Model/affiliateOrder";
 import Affiliate from "../../Model/affiliate";
+import { parse } from "path";
 
 // --- AFFILIATE TIER (CẤP BẬC) MANAGEMENT ---
 // [POST] /admin/affiliate/tiers
@@ -19,8 +20,36 @@ export const createAffiliateTier = async (req: Request, res: Response) => {
 // [GET] /admin/affiliate/tiers
 export const getAffiliateTiers = async (req: Request, res: Response) => {
   try {
-    const tiers = await AffiliateTier.find().sort({ min_sales: 1 });
-    res.status(200).json({ success: true, data: tiers });
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const search = req.body.search;
+    const skip = (page-1)*limit;
+    let filter = {};
+    if(search){
+      const searchRegex = new RegExp(search,"i");
+      filter = {$or:[
+        {name:searchRegex},
+        {min_sales:searchRegex}
+      ]}
+    }
+    const [totalItems,tiers] = await Promise.all([
+      AffiliateTier.countDocuments(filter),
+      AffiliateTier.find(filter)
+      .sort({min_sales:1})
+      .skip(skip)
+      .limit(limit)
+    ])
+    const totalPage = Math.ceil(totalItems/limit);
+    res.status(200).json({ 
+      success: true, 
+      data: tiers,
+      pagination:{
+        totalItems,
+        totalPage,
+        currentPage:page,
+        limit
+      }
+    });
   } catch (err: any) {
     res.status(500).json({ success: false, message: err.message });
   }
@@ -44,18 +73,40 @@ export const updateAffiliateTier = async (req: Request, res: Response) => {
 export const getAffiliateOrders = async (req: Request, res: Response) => {
   try {
     const { status } = req.query; // ?status=pending
-    
-    const filter: any = {};
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const search = req.body.search;
+    const skip = (page-1)*limit;
+    let filter:any = {};
     if (status) {
       filter.status = status;
     }
-    
-    const orders = await AffiliateOrder.find(filter)
-      .populate('affiliate', 'name email')
-      .populate('order', 'total_amount')
-      .sort({ createdAt: -1 });
-      
-    res.status(200).json({ success: true, data: orders });
+    if(search){
+      const serchRegex = new RegExp(search,"i");
+      filter = {$or:[
+        {status:serchRegex}
+      ]}
+    }
+    const [totalItems , orders] = await Promise.all([
+      AffiliateOrder.countDocuments(filter),
+      AffiliateOrder.find(filter)
+      .populate('affiliate','name email')
+      .populate('order','total_amount')
+      .sort({createdAt:-1})
+      .skip(skip)
+      .limit(limit)
+    ])
+    const totalPage = Math.ceil(totalItems/limit);
+    res.status(200).json({ 
+      success: true, 
+      data: orders,
+      pagination:{
+        totalItems,
+        totalPage,
+        currentPage:page,
+        limit
+      } 
+    });
   } catch (err: any) {
     res.status(500).json({ success: false, message: err.message });
   }

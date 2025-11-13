@@ -18,7 +18,6 @@ export const getProfile = async (req: Request, res: Response) => {
   try {
     const member = await Member.findById(memberId).populate("tier");
     if (!member) return res.status(404).json({ message: "Không tìm thấy hồ sơ" });
-
     res.status(200).json({ success: true, data: member });
   } catch (err: any) {
     res.status(500).json({ success: false, message: err.message });
@@ -29,7 +28,6 @@ export const getProfile = async (req: Request, res: Response) => {
 export const checkRewards = async (req: Request, res: Response) => {
   const memberId = (req as any).user?.memberId;
   if (!memberId) return res.status(401).json({ message: "Yêu cầu đăng nhập" });
-
   try {
     const member = (await Member.findById(memberId).populate("tier"));
     if (!member) return res.status(404).json({ message: "Không tìm thấy hồ sơ" });

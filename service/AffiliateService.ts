@@ -72,7 +72,6 @@ export class AffiliateService {
     affiliate: any,
     session: mongoose.ClientSession
   ) {
-    // SỬA LỖI: dùng min_sales (thay vì min_sale)
     const nextTier = await AffiliateTier.findOne({
       min_sales: { $lte: affiliate.total_sales },
     })

@@ -1,4 +1,4 @@
-// models/loyalty/redemption.js
+
 import mongoose from "mongoose";
 
 const redemptionSchema = new mongoose.Schema({
