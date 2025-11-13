@@ -147,8 +147,8 @@ export const resgisterAffiliate = async (req: Request, res: Response) => {
             }],
             { session }
         );
-        const frontendUrl = process.env.FRONTEND_URL || "https://loyaty-be.onrender.com";
-        const referralCode = `${frontendUrl}?ref=${referral_code}`;
+        const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+        const referralCode = `${frontendUrl}/track?ref=${referral_code}`;
         user.affiliateProfile = newAffiliate._id;
         await user.save({ session });
         await session.commitTransaction()

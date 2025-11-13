@@ -13,7 +13,7 @@ const voucherSchema = new mongoose.Schema({
   benefit: {
     type: String,
     enum: ['fixed', 'percentage'],
-    required: true
+    // required: true
   },//loai giam gia
   value: {
     type: Number,

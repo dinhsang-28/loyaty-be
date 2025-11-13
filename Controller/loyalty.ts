@@ -23,6 +23,11 @@ export const getProfile = async (req: Request, res: Response) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+//[PATCH] /loyalty/edit/:id
+// export const EditProfile = async(req:Request,res:Response)=>{
+//   const {id} = req.params;
+//   const memberId = {req as any}.user?.
+// }
 
 // [POST] /loyalty/check-rewards (Yêu cầu đăng nhập Member,kiểm tra đổi thưởng)
 export const checkRewards = async (req: Request, res: Response) => {
