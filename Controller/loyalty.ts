@@ -17,7 +17,9 @@ export const getProfile = async (req: Request, res: Response) => {
   if (!memberId) return res.status(401).json({ message: "Yêu cầu đăng nhập" });
 
   try {
-    const member = await Member.findById(memberId).populate("tier");
+    const member = await Member.findById(memberId)
+    .populate("user","email")
+    .populate("tier");
     if (!member) return res.status(404).json({ message: "Không tìm thấy hồ sơ" });
     res.status(200).json({ success: true, data: member });
   } catch (err: any) {

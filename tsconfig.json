@@ -12,7 +12,7 @@
   },
   "include": [
     "**/*.ts"
-  ],
+, "Routes/publicLoyalty"  ],
   "exclude": [
     "node_modules",
     "dist"

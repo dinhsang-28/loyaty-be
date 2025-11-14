@@ -106,13 +106,15 @@ export const createOrder = async (req: Request, res: Response) => {
     );
 
     // GỌI LOYALTY SERVICE (Tích điểm trên số tiền đã có sẵn)
-    const loyaltyResult = await LoyaltyService.earnPoints(
+    if(!redemptionCode){
+       const loyaltyResult = await LoyaltyService.earnPoints(
       member,
       finalAmount, // Tích điểm trên số tiền đã trả
       session,
       newOrder._id.toString()
     );
     pointsEarned = loyaltyResult.points;
+    }
 
     // GỌI AFFILIATE SERVICE
     if (affiliate) {

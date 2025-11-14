@@ -1,6 +1,7 @@
 import express, { Express, Request, Response } from "express";
 import indexRoutes from "./Routes/index.routes";
 import indexAdminRoutes from"./Routes/admin/index.routes";
+import indexRoutesPublicLoyalty from "./Routes/publicLoyalty/index"
 import "dotenv/config";
 import bodyParser from "body-parser";
 import cors from "cors";
@@ -39,6 +40,8 @@ app.use(cookieParser());
 indexRoutes(app);
 // Routes admin
 indexAdminRoutes(app);
+// publicLoyaty
+indexRoutesPublicLoyalty(app);
 // start local
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
