@@ -25,15 +25,22 @@ export class AffiliateService {
 
     // Tìm Affiliate
     const affiliate = await Affiliate.findById(affiliateId).session(session);
+    console.log("affilite",affiliate);
     if (!affiliate) {
       console.warn(`Affiliate not found for ID: ${affiliateId}`);
       return { affiliate: null, affiliateCommission: 0 };
     }
 
     // 2. Tính hoa hồng dựa trên hạng
+     const unitAmount = 1000
     const tier = await AffiliateTier.findById(affiliate.tier).session(session);
     const rate = (tier as any)?.commission_rate || 0.03; // Mặc định 3%
-    const affiliateCommission = order_amount * rate;
+    console.log("data rate:",rate);
+    const basePoints = Math.floor(order_amount / unitAmount);
+    console.log("data basePoints:",basePoints);
+     const affiliateCommission = basePoints * rate;
+     console.log("data affiliateCommission:",affiliateCommission);
+    // const affiliateCommission = order_amount * rate;
 
     if (affiliateCommission <= 0) {
       return { affiliate, affiliateCommission: 0 };
@@ -56,7 +63,9 @@ export class AffiliateService {
     // 4. Cập nhật tổng cho Affiliate
     // Tạm thời chưa cộng hoa hồng, chỉ cộng doanh số.
     // Hoa hồng sẽ được cộng khi AffiliateOrder chuyển sang 'paid'
-    affiliate.total_sales += order_amount;
+    console.log("number affiliate truoc:",affiliate.total_sales)
+    affiliate.total_sales += affiliateCommission;
+    console.log("number affiliate sau:",affiliate.total_sales)
     // affiliate.total_commission += affiliateCommission; // Tạm thời KHÔNG cộng vội
 
     // 5. Kiểm tra nâng hạng Affiliate

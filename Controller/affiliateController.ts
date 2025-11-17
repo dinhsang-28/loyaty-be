@@ -135,37 +135,6 @@ export const getSummary = async (req: Request, res: Response) => {
         conversionRate: `${conversionRate}%`
       }
     })
-    // const affiliate = await Affiliate.findById(affiliateId).lean();
-    // if (!affiliate) return res.status(404).json({ message: "Không tìm thấy hồ sơ" });
-    // // Thống kê payout
-    // const payoutStats = await Payout.aggregate([
-    //   { $match: { affiliate: affiliate._id } },
-    //   {
-    //     $group: {
-    //       _id: "$status",
-    //       total: { $sum: "$amount" }
-    //     }
-    //   }
-    // ]);
-    // const stats = {
-    //   requested: 0,
-    //   approved: 0,
-    //   paid: 0,
-    //   rejected: 0
-    // };
-    // payoutStats.forEach(stat => {
-    //   stats[stat._id] = stat.total;
-    // });
-    // res.status(200).json({
-    //   success: true,
-    //   data: {
-    //     total_commission_balance: affiliate.total_commission, // Số dư hiện tại
-    //     total_sales: affiliate.total_sales, // Tổng doanh số
-    //     pending_request: stats.requested,
-    //     approved_waiting_payment: stats.approved,
-    //     paid_total: stats.paid
-    //   }
-    // });
   } catch (err: any) {
     res.status(500).json({ success: false, message: err.message });
   }

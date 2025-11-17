@@ -16,7 +16,8 @@ export const createOrder = async (req: Request, res: Response) => {
   //  Lấy thông tin
   const memberId = (req as any).user?.memberId;
   const { items, total_amount, shipping_address, redemptionCode } = req.body;
-  const affiliateRef = req.cookies.affiliate_ref; // Lấy từ cookie
+  const affiliateRef = req.cookies.affiliate_ref;
+  console.log("ma affiliate:", affiliateRef);
 
   if (!memberId || !items || !total_amount) {
     return res.status(400).json({ message: "Thiếu thông tin đơn hàng hoặc khách hàng" });
@@ -70,15 +71,15 @@ export const createOrder = async (req: Request, res: Response) => {
           }
           break
         default:
-          return res.status(400).json({message:"loai voucher khong hop le"})
+          return res.status(400).json({ message: "loai voucher khong hop le" })
       }
       // giam tien truc tuyen
       finalAmount -= discount;
-      if(finalAmount<0) finalAmount=0;
+      if (finalAmount < 0) finalAmount = 0;
 
-      redemption.status="used";
-      redemption.usedAt= new Date();
-      await redemption.save({session});
+      redemption.status = "used";
+      redemption.usedAt = new Date();
+      await redemption.save({ session });
       redemptionUsedId = redemption._id.toString();
     }
 
@@ -106,19 +107,20 @@ export const createOrder = async (req: Request, res: Response) => {
     );
 
     // GỌI LOYALTY SERVICE (Tích điểm trên số tiền đã có sẵn)
-    if(!redemptionCode){
-       const loyaltyResult = await LoyaltyService.earnPoints(
-      member,
-      finalAmount, // Tích điểm trên số tiền đã trả
-      session,
-      newOrder._id.toString()
-    );
-    pointsEarned = loyaltyResult.points;
+    if (!redemptionCode) {
+      const loyaltyResult = await LoyaltyService.earnPoints(
+        member,
+        finalAmount, // Tích điểm trên số tiền đã trả
+        session,
+        newOrder._id.toString()
+      );
+      pointsEarned = loyaltyResult.points;
     }
 
     // GỌI AFFILIATE SERVICE
+    let affResult;
     if (affiliate) {
-      const affResult = await AffiliateService.trackAffiliateCommission(
+       affResult = await AffiliateService.trackAffiliateCommission(
         affiliate._id,
         finalAmount, // Tính hoa hồng trên số tiền đã trả
         newOrder._id.toString(),
@@ -129,9 +131,10 @@ export const createOrder = async (req: Request, res: Response) => {
 
     //Lưu các thay đổi
     await member.save({ session });
-    if (affiliate) {
-      await affiliate.save({ session });
+    if (affResult.affiliate) {
+      await affResult.affiliate.save({ session });
     }
+    console.log("data affiliate:", affiliate.total_sales);
 
     //Commit
     await session.commitTransaction();
