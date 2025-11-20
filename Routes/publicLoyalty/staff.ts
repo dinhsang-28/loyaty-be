@@ -17,6 +17,8 @@ const router = Router();
 
       // [GET] api/public/staff/vouchers
       router.get("/vouchers",controller.getVouchers)
+      //[GET] api/public/staff/get-vouchers/:id
+      router.get("/get-vouchers/:id",controller.GetVouchers)
 
       // [PATCH] api/public/staff/edit/vouchers/:id
       router.patch("/edit/vouchers/:id",controller.updateVoucher)

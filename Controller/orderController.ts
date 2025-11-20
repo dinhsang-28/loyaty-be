@@ -134,7 +134,7 @@ export const createOrder = async (req: Request, res: Response) => {
     if (affResult.affiliate) {
       await affResult.affiliate.save({ session });
     }
-    console.log("data affiliate:", affiliate.total_sales);
+    // console.log("data affiliate:", affiliate.total_sales);
 
     //Commit
     await session.commitTransaction();
@@ -160,7 +160,6 @@ export const createOrder = async (req: Request, res: Response) => {
       payload: { orderId: newOrder._id, points: pointsEarned },
       status: "queued"
     });
-
     // Gửi email cho Affiliate
     // if(affiliate && commissionEarned > 0) ... sendMail(...)
 

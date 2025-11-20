@@ -14,6 +14,13 @@ import { parse } from "path";
 export const createTier = async (req: Request, res: Response) => {
   try {
     const { name, min_points, benefits } = req.body;
+    if(min_points>0){
+      return res.status(400).json({message:"diem gioi han phai lon hon 0"})
+    }
+    const existingName = await Tier.find({name:name});
+    if(existingName){
+      return res.status(400).json({message:"ten da ton tai"})
+    }
     const tier = new Tier({ name, min_points, benefits });
     await tier.save();
     res.status(201).json({ success: true, data: tier });
@@ -27,15 +34,14 @@ export const getTiers = async (req: Request, res: Response) => {
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
-    const search = req.body.search;
+    const search = (req?.query.search as string)||"";
     const skip = (page-1)*limit;
-    let filter = {};
+    let filter:any = {};
     if(search){
       const searchRegex = new RegExp(search,"i");
        filter = {
         $or:[
         {name:searchRegex},
-        {min_points:searchRegex}
        ]}
     }
       const [totalItems , tiers] = await Promise.all([
@@ -61,6 +67,20 @@ export const getTiers = async (req: Request, res: Response) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+// [GET] admin/loyalty/get-tiers/:id
+export const GetTiers = async (req:Request,res:Response)=>{
+  try {
+    const {id} = req.params;
+  const data = await Tier.findById(id);
+  if(!data){
+    return res.status(400).json({message:"Id khong ton tai"})
+  }
+  return res.status(200).json({message:"lay  thanh cong"})
+  } catch (error) {
+    console.error("loi khi lay Tier id",error);
+    return res.status(500).json({message:"loi he thong"});
+  }
+}
 
 // [PATCH] /admin/loyalty/tiers/:id
 export const updateTier = async (req: Request, res: Response) => {

@@ -158,10 +158,8 @@ export const staffRedeemVoucher = async (req:Request, res:Response) => {
   if (!phone || !voucherId) {
     return res.status(400).json({ message: "Thiếu SĐT khách hàng hoặc voucherId" });
   }
-
   const session = await mongoose.startSession();
   session.startTransaction();
-
   try {
     const member = await Member.findOne({ phone }).session(session);
     const voucher = await Voucher.findById(voucherId).session(session);
@@ -324,9 +322,9 @@ export const createVoucher = async (req: Request, res: Response) => {
 
 // [GET] api/public/staff/vouchers (da co phan trang)
 export const getVouchers = async (req: Request, res: Response) => {
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 10;
-    const search = req.body.search || "";
+    const page = parseInt(req?.query.page as string) || 1;
+    const limit = parseInt(req?.query.limit as string) || 10;
+    const search = (req?.query.search as string) || "";
 
     const skip  = (page-1) * limit;
 
@@ -364,6 +362,20 @@ export const getVouchers = async (req: Request, res: Response) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+//[GET] api/public/staff/get-vouchers/:id
+export const GetVouchers = async (req:Request,res:Response)=>{
+  try {
+    const {id} = req.params;
+    const data = await Voucher.findById(id);
+    if(!data){
+      return res.status(400).json({success:true,message:"khog co id voucher"});
+    }
+    return res.status(200).json({success:true,message:"lay voucher thanh cong"}) 
+  } catch (error) {
+    console.error("loi khi lay voucher",error);
+    return res.status(500).json({success:false,message:"loi he thong"})
+  }
+}
 
 // [PATCH] api/public/staff/edit/vouchers/:id
 export const updateVoucher = async (req: Request, res: Response) => {
@@ -406,7 +418,7 @@ export const updateVoucher = async (req: Request, res: Response) => {
     });
   }
 };
-// [DELETE] api/public/staff/delet/vouchers/:id
+// [DELETE] api/public/staff/deletee/vouchers/:id
 export const deleteVoucher = async (req:Request,res:Response)=>{
     try {
         const voucher = await Voucher.findByIdAndDelete(req.params.id);
