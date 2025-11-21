@@ -4,6 +4,25 @@ import Payout from "../../Model/payout";
 import Affiliate from "../../Model/affiliate";
 import sendMail from "../../Helpers/sendMail"; 
 
+// [GET] /admin/payouts
+export const getPayouts = async (req:Request,res:Response)=>{
+  try {
+     const data = await Payout.find().populate("affiliate");
+     if(!data){
+      return res.status(400).json({message:"khong co payout"})
+     }
+     return res.status(200).json({
+      data:data,
+      message:"lay payout thanh cong"
+     })
+    
+  } catch (error) {
+    console.error("khong lay duoc payout",error);
+    return res.status(500).json({
+      message:"loi he thong"
+    })
+  }
+}
 /**
  * [PATCH] /admin/payouts/:payoutId/status
  * Admin duyệt hoặc từ chối một yêu cầu rút tiền

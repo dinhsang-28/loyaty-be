@@ -74,7 +74,6 @@ export const register = async (req: Request, res: Response) => {
 }
 
 //[POST] auth/login
-
 export const login = async (req: Request, res: Response) => {
     try {
         const { phone, password } = req.body

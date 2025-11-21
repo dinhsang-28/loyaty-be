@@ -14,7 +14,8 @@ const router = Router();
 
       //[GET] /api/public/staff/history/:phone  xem lich su giao dich
       router.get("/history/:phone",controller.getMemberHistory)
-
+       // [POST] api/public/staff/create/vouchers
+       router.post("/vouchers",controller.createVoucher);
       // [GET] api/public/staff/vouchers
       router.get("/vouchers",controller.getVouchers)
       //[GET] api/public/staff/get-vouchers/:id
@@ -24,5 +25,5 @@ const router = Router();
       router.patch("/edit/vouchers/:id",controller.updateVoucher)
 
       // [DELETE] api/public/staff/delete/vouchers/:id
-      router.delete("delete/vouchers/:id",controller.deleteVoucher)
+      router.delete("/delete/vouchers/:id",controller.deleteVoucher)
 export default router;

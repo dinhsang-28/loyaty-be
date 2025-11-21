@@ -7,6 +7,7 @@ import PointTransaction from "../../Model/pointTransaction";
 import mongoose from "mongoose";
 import { LoyaltyService } from "../../service/LoyaltyService";
 import { parse } from "path";
+import { console } from "inspector/promises";
 
 // --- TIER (CẤP BẬC) MEMBER ---
 
@@ -96,6 +97,7 @@ export const updateTier = async (req: Request, res: Response) => {
 // [DELETE] /admin/loyalty/tiers/:id
 export const deleteTier = async (req: Request, res: Response) => {
   try {
+    console.log("data id",req.params.id);
     const tier = await Tier.findByIdAndDelete(req.params.id);
     if (!tier) return res.status(404).json({ success: false, message: "Không tìm thấy Hạng" });
     res.status(200).json({ success: true, message: "Đã xóa Hạng" });
@@ -130,6 +132,7 @@ export const getVouchers = async (req: Request, res: Response) => {
 // [PATCH] /admin/loyalty/vouchers/:id
 export const updateVoucher = async (req: Request, res: Response) => {
   try {
+    
     const voucher = await Voucher.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!voucher) return res.status(404).json({ success: false, message: "Không tìm thấy Voucher" });
     res.status(200).json({ success: true, data: voucher });
@@ -146,11 +149,11 @@ export const getMembers = async (req: Request, res: Response) => {
       // logic tìm kiếm, phân trang
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
-    const search = req.body.search || "";
+    const search = (req?.query.search as string) || "";
 
     const skip  = (page-1) * limit;
 
-    let filter = {};
+    let filter:any = {};
     if(search){
       const serchRegex = new RegExp(search,"i");
       filter = {

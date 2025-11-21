@@ -328,7 +328,7 @@ export const getVouchers = async (req: Request, res: Response) => {
 
     const skip  = (page-1) * limit;
 
-    let filter = {};
+    let filter:any = {};
     if(search){
       const serchRegex = new RegExp(search,"i");
       filter = {

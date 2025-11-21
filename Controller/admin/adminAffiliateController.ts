@@ -131,8 +131,8 @@ export const getAffiliateOrders = async (req: Request, res: Response) => {
   try {
     const { status } = req.query; // ?status=pending
     const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 10;
-    const search = req.body.search;
+    const limit = parseInt(req.query.limit as string) || 20;
+    const search = req.query.search as string || "";
     const skip = (page-1)*limit;
     let filter:any = {};
     if (status) {

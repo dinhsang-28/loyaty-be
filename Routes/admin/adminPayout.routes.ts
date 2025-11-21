@@ -4,6 +4,7 @@ import * as controller from "../../Controller/admin/adminPayoutController";
 
 const router = Router();
 
+router.get("/",controller.getPayouts);
 // Duyệt/Từ chối yêu cầu rút tiền
 router.patch("/:payoutId/status", controller.updatePayoutStatus);
 

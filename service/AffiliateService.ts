@@ -32,13 +32,13 @@ export class AffiliateService {
     }
 
     // 2. Tính hoa hồng dựa trên hạng
-     const unitAmount = 1000
+    //  const unitAmount = 1000
     const tier = await AffiliateTier.findById(affiliate.tier).session(session);
     const rate = (tier as any)?.commission_rate || 0.03; // Mặc định 3%
     console.log("data rate:",rate);
-    const basePoints = Math.floor(order_amount / unitAmount);
-    console.log("data basePoints:",basePoints);
-     const affiliateCommission = basePoints * rate;
+    // const basePoints = Math.floor(order_amount / unitAmount);
+    // console.log("data basePoints:",basePoints);
+     const affiliateCommission = order_amount * rate;
      console.log("data affiliateCommission:",affiliateCommission);
     // const affiliateCommission = order_amount * rate;
 

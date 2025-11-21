@@ -8,6 +8,7 @@ const router = Router();
 router.post("/tiers", controller.createAffiliateTier);
 router.get("/tiers", controller.getAffiliateTiers);
 router.patch("/tiers/:id", controller.updateAffiliateTier);
+router.delete("/delete-tiers/:id",controller.deleteAffiliateTier)
 
 // Affiliate Orders (Duyệt hoa hồng)
 router.get("/orders", controller.getAffiliateOrders);
