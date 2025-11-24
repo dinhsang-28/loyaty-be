@@ -277,7 +277,7 @@ export const createVoucher = async (req: Request, res: Response) => {
       title,
       description,
       pointsRequired,
-      totalQuantity, 
+      totalQuantity,
       validFrom,
       validTo,
       status,
@@ -286,42 +286,70 @@ export const createVoucher = async (req: Request, res: Response) => {
       minValue,
       maxDiscount
     } = req.body;
-    if(!title || pointsRequired === undefined || totalQuantity === undefined){
-        return res.status(400).json({
+
+    // 1. Validate dữ liệu cơ bản
+    if (!title || pointsRequired === undefined || totalQuantity === undefined) {
+      return res.status(400).json({
         success: false,
         message: "Vui lòng cung cấp đầy đủ: title, pointsRequired, và totalQuantity"
       });
     }
-    const remainingQuantity = totalQuantity;
-    if(validTo<new Date(validTo) && (validFrom ? new Date(validFrom) : new Date)){
-        return res.status(400).json({ 
-            success: false, 
-            message: "Ngày hết hạn (validTo) không thể trước ngày bắt đầu (validFrom) hoặc ngày hiện tại." 
-        });
+
+    // 2. SỬA LẠI LOGIC NGÀY THÁNG (Quan trọng)
+    const startDate = validFrom ? new Date(validFrom) : new Date(); // Nếu không có ngày bắt đầu thì lấy ngày hiện tại
+    const endDate = new Date(validTo);
+
+    // Kiểm tra ngày hợp lệ
+    if (isNaN(endDate.getTime())) {
+         return res.status(400).json({
+            success: false,
+            message: "Ngày hết hạn (validTo) không hợp lệ."
+         });
     }
+
+    // Kiểm tra: Ngày kết thúc phải sau ngày bắt đầu
+    if (endDate <= startDate) {
+      return res.status(400).json({
+        success: false,
+        message: "Ngày hết hạn (validTo) phải sau ngày bắt đầu (validFrom) hoặc ngày hiện tại."
+      });
+    }
+
+    const remainingQuantity = totalQuantity;
+
     const voucher = new Voucher({
       title,
       description,
-      pointsRequired,
-      totalQuantity,
-      remainingQuantity, 
-      validFrom,
-      validTo,
-      status,
-      benefit,
-      value,
-      minValue,
-      maxDiscount
+      pointsRequired: Number(pointsRequired), // Ép kiểu số cho an toàn
+      totalQuantity: Number(totalQuantity),   // Ép kiểu số cho an toàn
+      remainingQuantity: Number(remainingQuantity),
+      validFrom: startDate,
+      validTo: endDate,
+      status:status || 'active',
+      benefit:benefit || 'fixed',
+      value: Number(value),
+      minValue: minValue ? Number(minValue) : 0,
+      maxDiscount: maxDiscount ? Number(maxDiscount) : 0
     });
-     await voucher.save();
+
+    await voucher.save();
+    
+    // Trả về thành công
     res.status(200).json({ success: true, data: voucher });
+
   } catch (err: any) {
-    // res.status(500).json({ success: false, message: "loi he thong" });
+    // 3. THÊM LOG ĐỂ DEBUG (Quan trọng để biết lỗi gì nếu pending/error)
+    console.error("Lỗi Create Voucher:", err); 
+    
+    res.status(500).json({ 
+        success: false, 
+        message: err.message || "Lỗi hệ thống" 
+    });
   }
 };
-
 // [GET] api/public/staff/vouchers (da co phan trang)
 export const getVouchers = async (req: Request, res: Response) => {
+  try {
     const page = parseInt(req?.query.page as string) || 1;
     const limit = parseInt(req?.query.limit as string) || 10;
     const search = (req?.query.search as string) || "";
@@ -345,7 +373,7 @@ export const getVouchers = async (req: Request, res: Response) => {
         .limit(limit)
       ])
       const totalPage = Math.ceil(totalItem/limit);
-        res.status(200).json({ 
+       return res.status(200).json({ 
           success: true, 
           data: voucher,
           pagination:{
@@ -355,11 +383,12 @@ export const getVouchers = async (req: Request, res: Response) => {
             limit
           }
         });
-  try {
-    const vouchers = await Voucher.find().sort({ createdAt: -1 });
-    res.status(200).json({ success: true, data: vouchers });
-  } catch (err: any) {
-    res.status(500).json({ success: false, message: err.message });
+  } catch (error) {
+    console.error("loi khi load vouchers",error);
+     return res.status(500).json({
+      success:false,
+      message:"loi server"
+     })
   }
 };
 //[GET] api/public/staff/get-vouchers/:id
@@ -418,7 +447,7 @@ export const updateVoucher = async (req: Request, res: Response) => {
     });
   }
 };
-// [DELETE] api/public/staff/deletee/vouchers/:id
+// [DELETE] api/public/staff/delete/vouchers/:id
 export const deleteVoucher = async (req:Request,res:Response)=>{
     try {
         const voucher = await Voucher.findByIdAndDelete(req.params.id);

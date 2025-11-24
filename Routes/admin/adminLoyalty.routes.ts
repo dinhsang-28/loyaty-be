@@ -18,9 +18,9 @@ router.patch("/vouchers/:id", controller.updateVoucher);
 
 // Members (Thành viên)
 router.get("/members", controller.getMembers);
-router.post("/members/adjust-points", controller.adjustMemberPoints);
+router.post("/members/adjust-points/:id", controller.adjustMemberPoints);
 
 // Dùng code tại quầy (Admin/Cashier dùng)
-router.post("/use-code", useRewardCode);
+router.post("/use-code/:phone", useRewardCode);
 
 export default router;

@@ -8,6 +8,7 @@ import mongoose from "mongoose";
 import { LoyaltyService } from "../../service/LoyaltyService";
 import { parse } from "path";
 import { console } from "inspector/promises";
+import { Console } from "console";
 
 // --- TIER (CẤP BẬC) MEMBER ---
 
@@ -15,10 +16,11 @@ import { console } from "inspector/promises";
 export const createTier = async (req: Request, res: Response) => {
   try {
     const { name, min_points, benefits } = req.body;
-    if(min_points>0){
+    console.log(req.body);
+    if(min_points<0){
       return res.status(400).json({message:"diem gioi han phai lon hon 0"})
     }
-    const existingName = await Tier.find({name:name});
+    const existingName = await Tier.findOne({name:name});
     if(existingName){
       return res.status(400).json({message:"ten da ton tai"})
     }
@@ -97,7 +99,7 @@ export const updateTier = async (req: Request, res: Response) => {
 // [DELETE] /admin/loyalty/tiers/:id
 export const deleteTier = async (req: Request, res: Response) => {
   try {
-    console.log("data id",req.params.id);
+    
     const tier = await Tier.findByIdAndDelete(req.params.id);
     if (!tier) return res.status(404).json({ success: false, message: "Không tìm thấy Hạng" });
     res.status(200).json({ success: true, message: "Đã xóa Hạng" });
@@ -187,20 +189,19 @@ export const getMembers = async (req: Request, res: Response) => {
     }
 };
 
-// [POST] /admin/loyalty/members/adjust-points
+// [POST] /admin/loyalty/members/adjust-points/:id
 // Admin cộng/trừ điểm thủ công
 export const adjustMemberPoints = async (req: Request, res: Response) => {
-  const { memberId, amount, reason } = req.body;
-  if (!memberId || !amount || !reason) {
-    return res.status(400).json({ message: "Thiếu memberId, amount, hoặc reason" });
-  }
-  if(amount<0){
-    return res.status(400).json({message:`amount khong duoc nho hon khong`})
+  const {id} = req.params;
+  const { amount } = req.body;
+  console.log("Data Amount:",amount);
+  if (!amount) {
+    return res.status(400).json({ message: "Thiếu amount " });
   }
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
-    const member = await Member.findById(memberId).session(session);
+    const member = await Member.findById(id).session(session);
     if (!member) throw new Error("Không tìm thấy member");
     
     // Ghi log
@@ -210,7 +211,7 @@ export const adjustMemberPoints = async (req: Request, res: Response) => {
         type: "adjust", // Loại "điều chỉnh"
         amount: amount,
         source: "admin_adjust",
-        description: reason
+        description: "dieu chinh diem"
       }],
       { session }
     );

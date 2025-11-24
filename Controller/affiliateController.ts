@@ -36,7 +36,7 @@ export const requestPayout = async (req: Request, res: Response) => {
       status: "requested"
     }).session(session);
     if (existing) {
-      return res.status(200).json({ message: "ban dang co mot yeu cau dang cho" })
+      return res.status(400).json({ message: "ban dang co mot yeu cau dang cho" })
     }
     // Kiểm tra số dư (total_commission là số dư có thể rút)
     if (affiliate.total_commission < amount) {
@@ -47,12 +47,14 @@ export const requestPayout = async (req: Request, res: Response) => {
       [{
         affiliate: affiliate._id,
         amount: amount,
-        status: "requested"
+        status: "requested",
+        balance_after: affiliate.total_commission - amount
       }],
       { session }
     );
     // Trừ tiền khỏi số dư
     affiliate.total_commission -= amount;
+    affiliate.total_commission = Math.round(affiliate.total_commission * 100) / 100;
     await affiliate.save({ session });
     await session.commitTransaction();
     // sendMail cho admin
