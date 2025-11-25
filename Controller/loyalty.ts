@@ -211,13 +211,18 @@ export const redeemVoucher = async (req: Request, res: Response) => {
   }
 };
 
-// [POST] /loyalty/use-code (mã dùng tại quầy)
+// [POST] /loyalty/use-code/:phone (mã dùng tại quầy)
 export const useRewardCode = async (req: Request, res: Response) => {
+  const {phone} = req.params;
   const { code } = req.body;
-  if (!code) return res.status(400).json({ message: "Thiếu mã code" });
+  if (!phone||!code) return res.status(400).json({ message: "Thiếu mã code hoac phone" });
 
   try {
-    const redemption = await Redemption.findOne({ voucherCode: code });
+    const member = await Member.findOne({phone:phone});
+    if(!member){
+      return res.status(400).json({ message: "Khach hang khong ton tai" });
+    }
+    const redemption = await Redemption.findOne({memberId:member._id, voucherCode: code });
     
     if (!redemption) return res.status(404).json({ message: "Mã không tồn tại" });
     if (redemption.status === 'used') return res.status(400).json({ message: "Mã đã được sử dụng" });

@@ -198,7 +198,7 @@ export const staffRedeemVoucher = async (req:Request, res:Response) => {
         amount: -voucher.pointsRequired, // Tiêu điểm là số âm
         source: "staff_redeem", // Nguồn là 'nhân viên đổi'
         refId: voucher._id.toString(),
-        description: `Đổi voucher: ${voucher.title} (thực hiện bởi nan vien})`
+        description: `Đổi voucher: ${voucher.title} (thực hiện bởi nhân viên})`
       }],
       { session }
     );
@@ -225,9 +225,9 @@ export const staffRedeemVoucher = async (req:Request, res:Response) => {
     //  Ghi log (tùy chọn)
     MessageLog.create({
       memberId: member._id,
-      channel: "STAFF_PORTAL",
+      channel: "ZNS",
       payload: { voucherCode, voucherName: voucher.title, staff: "staff" },
-      status: "completed"
+      status: "queued"
     });
 
     // Trả về mã voucher để nhân viên đưa cho khách
