@@ -5,6 +5,7 @@ const AffiliateOrderSchema = new mongoose.Schema({
   order: { type: mongoose.Schema.Types.ObjectId, ref: 'Order', required: true }, 
   order_value: { type: Number, required: true },
   commission_amount: { type: Number, required: true },
+  sale_amount:{ type: Number, required: true },
   status: { type: String, enum: ['pending', 'paid', 'canceled'], default: 'pending' },
   meta: Object,
 }, { timestamps: true }); 

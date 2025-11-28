@@ -181,6 +181,7 @@ export const approveAffiliateOrder = async (req: Request, res: Response) => {
   
   try {
     const affOrder = await AffiliateOrder.findById(id).session(session);
+    console.log("total sales:",affOrder.sale_amount);
     if (!affOrder) throw new Error("Không tìm thấy hoa hồng này");
     if (affOrder.status !== 'pending') throw new Error("Hoa hồng đã được xử lý");
 
@@ -190,9 +191,14 @@ export const approveAffiliateOrder = async (req: Request, res: Response) => {
     // 2. Cộng tiền vào số dư (total_commission) của Affiliate
     await Affiliate.updateOne(
       { _id: affOrder.affiliate },
-      { $inc: { total_commission: affOrder.commission_amount } },
+      { $inc: { 
+        total_commission: affOrder.commission_amount,
+        total_sales:affOrder.sale_amount 
+      } },
       { session }
     );
+    const affiliate = await Affiliate.findOne({_id:affOrder.affiliate})
+    console.log("talsale sau khi cong:",affiliate.total_sales);
     
     await affOrder.save({ session });
     await session.commitTransaction();

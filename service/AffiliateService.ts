@@ -51,10 +51,11 @@ export class AffiliateService {
       [
         {
           affiliate: affiliate._id,
-          order: orderId, // <-- Liên kết với Order
+          order: orderId, 
           order_value: order_amount,
           commission_amount: affiliateCommission,
-          status: 'pending' // Chờ đối soát
+          sale_amount:affiliateCommission,
+          status: 'pending' 
         },
       ],
       { session }
@@ -63,9 +64,9 @@ export class AffiliateService {
     // 4. Cập nhật tổng cho Affiliate
     // Tạm thời chưa cộng hoa hồng, chỉ cộng doanh số.
     // Hoa hồng sẽ được cộng khi AffiliateOrder chuyển sang 'paid'
-    console.log("number affiliate truoc:",affiliate.total_sales)
-    affiliate.total_sales += affiliateCommission;
-    console.log("number affiliate sau:",affiliate.total_sales)
+    // console.log("number affiliate truoc:",affiliate.total_sales)
+    // // affiliate.total_sales += affiliateCommission;
+    // console.log("number affiliate sau:",affiliate.total_sales)
     // affiliate.total_commission += affiliateCommission; // Tạm thời KHÔNG cộng vội
 
     // 5. Kiểm tra nâng hạng Affiliate

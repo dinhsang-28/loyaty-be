@@ -244,6 +244,7 @@ export const staffRedeemVoucher = async (req:Request, res:Response) => {
     session.endSession();
   }
 }
+
 //[GET] /api/public/staff/history/:phone  xem lich su giao dich
 export const getMemberHistory = async (req:Request,res:Response)=>{
     const {phone} = req.params;
